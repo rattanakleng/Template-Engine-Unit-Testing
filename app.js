@@ -5,6 +5,8 @@ const inquirer = require("inquirer");
 const path = require("path");
 const fs = require("fs");
 
+const questionList = require("./lib/questionList");
+
 const OUTPUT_DIR = path.resolve(__dirname, "output");
 const outputPath = path.join(OUTPUT_DIR, "team.html");
 
@@ -16,34 +18,14 @@ const employeeList = [];
 const askUserForManagerInfo = () => {
 
     inquirer.prompt(
-        [
-            {
-                message: "What is the manager's name?",
-                name: "name",
-                type: "input",
-            },
-            {
-                message: "What is the manager's id",
-                name: "id",
-                type: "input"
-            },
-            {
-                message: "What is the manager's email?",
-                name: "email",
-                type: "input"
-            },
-            {
-                message: "What is the manager's office number?",
-                name: "officeNumber",
-                type: "input"
-            }
-        ]).then((managerData) => {
-            const newManager = new Manager(managerData.name, managerData.id, managerData.email, managerData.officeNumber)
 
+        questionList[0].managerQuestions 
 
-            // console.log(newManager);
+        ).then((managerData) => {
 
-            employeeList.push(newManager)
+            const newManager = new Manager(toTitleCase(managerData.name),managerData.id.toUpperCase(), managerData.email.toLowerCase(), managerData.officeNumber.toUpperCase());
+
+            employeeList.push(newManager);
 
             console.log(employeeList);
 
@@ -53,22 +35,25 @@ const askUserForManagerInfo = () => {
 
 //Ask user for next employee type
 const askEmployeeRole = () => {
-    inquirer.prompt([{
-        message: "Do you want to add employee information?",
-        name: "role",
-        choices: ["engineer", "intern", "no more employee"],
-        type: "list"
-    }]).then((nextEmployee) => {
 
-        console.log(nextEmployee);
+    inquirer.prompt(
+
+        questionList[3].nextEmployeeQuestion
+ 
+    ).then((nextEmployee) => {
+
         if (nextEmployee.role === "engineer") {
 
             askEngineerInfo();
+
         } else if (nextEmployee.role === "intern") {
 
             askInternInfo();
+
         } else {
+            
             createHtmlFile();
+
         }
     })
 }
@@ -77,31 +62,15 @@ const askEmployeeRole = () => {
 const askEngineerInfo = () => {
     // console.log("User select engineer")
     inquirer.prompt(
-        [
-            {
-                message: "What is the engineer name?",
-                name: "name",
-                type: "input",
-            },
-            {
-                message: "What is the engineer's id",
-                name: "id",
-                type: "input"
-            },
-            {
-                message: "What is the's email?",
-                name: "email",
-                type: "input"
-            },
-            {
-                message: "What is engineer's GitHub user name?",
-                name: "github",
-                type: "input"
-            }
-        ]).then((engineerData) => {
-            const newEngineer = new Engineer(engineerData.name, engineerData.id, engineerData.email, engineerData.github)
+        
+        questionList[1].engineerQuestion
+ 
+        ).then((engineerData) => {
 
-            employeeList.push(newEngineer)
+            const newEngineer = new Engineer(toTitleCase(engineerData.name), engineerData.id.toUpperCase(), engineerData.email.toLowerCase(), engineerData.github.toLowerCase());
+
+            employeeList.push(newEngineer);
+
             console.log(employeeList);
 
             askEmployeeRole();
@@ -109,40 +78,24 @@ const askEngineerInfo = () => {
 }
 
 const askInternInfo = () => {
-    inquirer.prompt([{
-        message: 'What is the interns name?',
-        name: 'name',
-        type: 'input',
-    },
-    {
-        message: 'What is the interns id?',
-        name: 'id',
-        type: 'input'
-    },
-    {
-        message: 'What is the interns email?',
-        name: 'email',
-        type: 'input'
-    },
-    {
-        message: 'What school does the intern currently attend?',
-        name: 'school',
-        type: 'input'
-    }]).then((internData) => {
-        const newIntern = new Intern(internData.name, internData.id, internData.email, internData.school)
+    inquirer.prompt(
 
-        employeeList.push(newIntern)
+        questionList[2].internQuestion
+
+        ).then((internData) => {
+
+        const newIntern = new Intern(toTitleCase(internData.name), internData.id.toUpperCase(), internData.email.toLowerCase(), toTitleCase(internData.school));
+
+        employeeList.push(newIntern);
+
         console.log(employeeList);
 
         askEmployeeRole();
     });
-
 }
-
+//Render information in main.html
 const createHtmlFile = () => {
     // const htmlContent = render(employee)
-
-
     const htmlContent = render(employeeList);
     // fs mod to write html
     fs.writeFile(__dirname + '/main.html', htmlContent, (err) => {
@@ -156,3 +109,16 @@ const createHtmlFile = () => {
 };
 
 askUserForManagerInfo();
+
+//Function convert first letter to upper case
+
+function toTitleCase(str) {
+    console.log("str parameter from totitle case funct: " + str)
+
+    return str.replace(
+        /\w\S*/g,
+        function (txt) {
+            return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+        }
+    );
+}
